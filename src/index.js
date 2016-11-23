@@ -73,8 +73,74 @@ const store = createStore(todoApp);
 
 
 /**
- * react component
+ * react presentational components
  */
+
+const Todo = ({
+	onClick,
+	completed,
+	text
+}) => {
+
+	const todoStyle = {
+		textDecoration: completed ? "line-through" : "none"
+	};
+
+	return <li onClick = {onClick} style={todoStyle}>{text}</li>;
+};
+
+const TodoList = ({
+	todos,
+	onTodoClick
+}) => {
+	return <ul>{todos.map(todo=><Todo key={todo.id} {...todo} onClick={()=>onTodoClick(todo.id)}/>)}</ul>;
+};
+
+const AddTodo = ({
+	onAddClick
+}) => {
+	let input;
+
+	const onClick = () => {
+		onAddClick(input.value);
+		input.value = "";
+	};
+
+	return (
+		<div>
+			<input ref={node=> { input = node; }}/>
+			<button onClick={onClick}>创建待办</button>	
+		</div>
+	);
+};
+
+const Footer = ({
+	visibilityFilter,
+	onFilterClick
+}) => {
+	return (
+		<p>
+			<FilterLink currentFilter={visibilityFilter} filter="SHOW_ALL" onClick={onFilterClick}>所有</FilterLink> {' '}
+			<FilterLink currentFilter={visibilityFilter} filter="SHOW_ACTIVE" onClick={onFilterClick}>激活的</FilterLink> {' '}
+			<FilterLink currentFilter={visibilityFilter} filter="SHOW_COMPLETED" onClick={onFilterClick}>完成的</FilterLink> {' '}
+		</p>
+	);
+};
+
+
+const FilterLink = ({
+	filter,
+	currentFilter,
+	children,
+	onClick
+}) => {
+
+	if (filter === currentFilter) {
+		return <span>{children}</span>
+	}
+
+	return (<a href='#' onClick={e=>{ e.preventDefault(); onClick(filter);}}>{children}</a>);
+};
 
 const getVisibleTodos = (todos, filter) => {
 	switch (filter) {
@@ -86,81 +152,43 @@ const getVisibleTodos = (todos, filter) => {
 			return todos.filter(t => !t.completed);
 	}
 };
+
 let nextTodoId = 0;
-class TodoApp extends React.Component {
-	render() {
-		const {
-			todos,
-			visibilityFilter
-		} = this.props;
-		const visibleTodos = getVisibleTodos(todos, visibilityFilter);
-
-		return (
-			<div>
-				<input ref={node=> { this.input = node }}/>
-				<button onClick={()=> {
-					store.dispatch({
-						type: "ADD_TODO",
-						text: this.input.value,
-						id: nextTodoId++
-					});
-					this.input.value = "";
-				}}>
-					创建待办
-				</button>
-
-				<ul>
-					{visibleTodos.map(todo => {
-						return (
-							<li key={todo.id}
-								onClick={()=> {
-									store.dispatch({
-										type: "TOGGLE_TODO",
-										id: todo.id
-									});
-								}}
-								style={{
-									textDecoration: 
-										todo.completed ?
-											"line-through" :
-											"none"
-								}}
-							>
-								{todo.text}
-							</li>
-						);
-					})}
-				</ul>
-
-				<p>
-					<FilterLink currentFilter={visibilityFilter} filter="SHOW_ALL">所有</FilterLink> {' '}
-					<FilterLink currentFilter={visibilityFilter} filter="SHOW_ACTIVE">激活的</FilterLink> {' '}
-					<FilterLink currentFilter={visibilityFilter} filter="SHOW_COMPLETED">完成的</FilterLink> {' '}
-				</p>
-			</div>
-		);
-	}
-}
-
-const FilterLink = ({
-	filter,
-	currentFilter,
-	children
+const TodoApp = ({
+	todos,
+	visibilityFilter
 }) => {
+	const visibleTodos = getVisibleTodos(todos, visibilityFilter);
 
-	if (filter === currentFilter) {
-		return <span>{children}</span>
-	}
-
-	const handleClick = (e) => {
-		e.preventDefault();
+	const onTodoClick = (id) => {
+		store.dispatch({
+			type: 'TOGGLE_TODO',
+			id
+		});
+	};
+	const onAddClick = (text) => {
+		store.dispatch({
+			type: 'ADD_TODO',
+			id: nextTodoId++,
+			text
+		});
+	};
+	const onFilterClick = (filter) => {
 		store.dispatch({
 			type: 'SET_VISIBILITY_FILTER',
 			filter
 		});
 	};
-	return (<a href='#' onClick={handleClick}>{children}</a>);
+
+	return (
+		<div>
+			<AddTodo onAddClick={onAddClick}/>
+			<TodoList todos={visibleTodos} onTodoClick={onTodoClick} />
+			<Footer visibilityFilter={visibilityFilter} onFilterClick={onFilterClick}/>
+		</div>
+	);
 };
+
 
 
 /**
