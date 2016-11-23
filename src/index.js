@@ -4,6 +4,10 @@ import {
 	createStore,
 	combineReducers
 } from 'redux';
+import {
+	Provider,
+	connect
+} from 'react-redux';
 
 import util from './util';
 
@@ -66,13 +70,6 @@ const todoApp = combineReducers({
 
 
 /**
- * store
- */
-
-const store = createStore(todoApp);
-
-
-/**
  * react presentational components
  */
 
@@ -96,30 +93,12 @@ const TodoList = ({
 	return <ul>{todos.map(todo=><Todo key={todo.id} {...todo} onClick={()=>onTodoClick(todo.id)}/>)}</ul>;
 };
 
-let nextTodoId = 0;
-const AddTodo = () => {
-	let input;
-
-	const onClick = () => {
-		store.dispatch({
-			type: 'ADD_TODO',
-			text: input.value,
-			id: nextTodoId++
-		})
-		input.value = "";
-	};
-
-	return (
-		<div>
-			<input ref={node=> { input = node; }}/>
-			<button onClick={onClick}>创建待办</button>	
-		</div>
-	);
-};
 
 const Footer = () => {
 	return (
 		<p>
+			显示：
+			{' '}
 			<FilterLink filter="SHOW_ALL" >所有</FilterLink> {' '}
 			<FilterLink filter="SHOW_ACTIVE">激活的</FilterLink> {' '}
 			<FilterLink filter="SHOW_COMPLETED">完成的</FilterLink> {' '}
@@ -141,6 +120,23 @@ const Link = ({
 	return (<a href='#' onClick={e=>{ e.preventDefault(); onClick();}}>{children}</a>);
 };
 
+
+
+const TodoApp = () => {
+	return (
+		<div>
+			<AddTodo />
+			<VisibleTodoList />
+			<Footer />
+		</div>
+	);
+};
+
+/**
+ * react container components
+ */
+
+
 const getVisibleTodos = (todos, filter) => {
 	switch (filter) {
 		case 'SHOW_ALL':
@@ -152,76 +148,80 @@ const getVisibleTodos = (todos, filter) => {
 	}
 };
 
-
-const TodoApp = () => {
-	return (
-		<div>
-			<AddTodo />
-			<VisibleTodoList />
-			<Footer/>
-		</div>
-	);
+const mapStateToTodoListProps = (state) => {
+	return {
+		todos: getVisibleTodos(state.todos, state.visibilityFilter)
+	};
 };
 
-/**
- * react container components
- */
-class FilterLink extends React.Component {
-	componentDidMount() {
-		this.unsubscribe = store.subscribe(() => this.forceUpdate());
-	}
-
-	componentWillUnmount() {
-		this.unsubscribe();
-	}
-
-	render() {
-		const props = this.props;
-		const state = store.getState();
-		const onClick = () => {
-			store.dispatch({
-				type: 'SET_VISIBILITY_FILTER',
-				filter: props.filter
-			});
-		};
-
-		return (
-			<Link active={props.filter === state.visibilityFilter} onClick={onClick}>
-				{props.children}
-			</Link>
-		);
-	}
-}
-
-class VisibleTodoList extends React.Component {
-	componentDidMount() {
-		this.unsubscribe = store.subscribe(() => this.forceUpdate());
-	}
-
-	componentWillUnmount() {
-		this.unsubscribe();
-	}
-
-	render() {
-		const props = this.props;
-		const state = store.getState();
-		const visibleTodos = getVisibleTodos(state.todos, state.visibilityFilter);
-		const onTodoClick = (id) => {
-			store.dispatch({
+const mapDispatchToTodoListProps = (dispatch) => {
+	return {
+		onTodoClick: (id) => {
+			dispatch({
 				type: 'TOGGLE_TODO',
 				id
 			});
-		};
+		}
+	};
+};
 
-		return (
-			<TodoList todos={visibleTodos} onTodoClick={onTodoClick} />
-		);
-	}
-}
+const VisibleTodoList = connect(
+	mapStateToTodoListProps,
+	mapDispatchToTodoListProps
+)(TodoList);
+
+let nextTodoId = 0;
+let AddTodo = ({
+	dispatch
+}) => {
+	let input;
+
+	const onClick = () => {
+		dispatch({
+			type: 'ADD_TODO',
+			text: input.value,
+			id: nextTodoId++
+		})
+		input.value = "";
+	};
+
+	return (
+		<div>
+			<input ref={node=> { input = node; }}/>
+			<button onClick={onClick}>创建待办</button>	
+		</div>
+	);
+};
+AddTodo = connect()(AddTodo);
+
+
+const mapStateToLinkProps = (state, ownProps) => {
+	return {
+		active: state.visibilityFilter == ownProps.filter
+	};
+};
+
+const mapDispatchToLinkProps = (dispatch, ownProps) => {
+	return {
+		onClick: () => {
+			dispatch({
+				type: 'SET_VISIBILITY_FILTER',
+				filter: ownProps.filter
+			});
+		}
+	};
+};
+
+const FilterLink = connect(mapStateToLinkProps, mapDispatchToLinkProps)(Link);
 
 
 /**
  * main entry
  */
 
-ReactDOM.render(<TodoApp />, root);
+ReactDOM.render(
+	<Provider store={createStore(todoApp)}>
+		<TodoApp />
+	</Provider>,
+	root
+);
