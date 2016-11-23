@@ -1,17 +1,32 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import {
+	render
+} from 'react-dom';
 import {
 	Provider
 } from 'react-redux';
+import {
+	createStore
+} from 'redux';
 
 import util from './util';
 
-import TodoApp from './components';
-import store from './store';
+import App from './components/App';
+import todoApp from './reducers';
 
-ReactDOM.render(
+const persistedState = {
+	todos: [{
+		id: '0',
+		text: 'Welcome back!',
+		completed: false,
+	}]
+};
+
+const store = createStore(todoApp, persistedState);
+
+render(
 	<Provider store={store}>
-		<TodoApp />
+		<App />
 	</Provider>,
 	util.addNode('root')
 );
