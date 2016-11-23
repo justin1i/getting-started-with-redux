@@ -96,13 +96,16 @@ const TodoList = ({
 	return <ul>{todos.map(todo=><Todo key={todo.id} {...todo} onClick={()=>onTodoClick(todo.id)}/>)}</ul>;
 };
 
-const AddTodo = ({
-	onAddClick
-}) => {
+let nextTodoId = 0;
+const AddTodo = () => {
 	let input;
 
 	const onClick = () => {
-		onAddClick(input.value);
+		store.dispatch({
+			type: 'ADD_TODO',
+			text: input.value,
+			id: nextTodoId++
+		})
 		input.value = "";
 	};
 
@@ -114,32 +117,28 @@ const AddTodo = ({
 	);
 };
 
-const Footer = ({
-	visibilityFilter,
-	onFilterClick
-}) => {
+const Footer = () => {
 	return (
 		<p>
-			<FilterLink currentFilter={visibilityFilter} filter="SHOW_ALL" onClick={onFilterClick}>所有</FilterLink> {' '}
-			<FilterLink currentFilter={visibilityFilter} filter="SHOW_ACTIVE" onClick={onFilterClick}>激活的</FilterLink> {' '}
-			<FilterLink currentFilter={visibilityFilter} filter="SHOW_COMPLETED" onClick={onFilterClick}>完成的</FilterLink> {' '}
+			<FilterLink filter="SHOW_ALL" >所有</FilterLink> {' '}
+			<FilterLink filter="SHOW_ACTIVE">激活的</FilterLink> {' '}
+			<FilterLink filter="SHOW_COMPLETED">完成的</FilterLink> {' '}
 		</p>
 	);
 };
 
 
-const FilterLink = ({
-	filter,
-	currentFilter,
+const Link = ({
+	active,
 	children,
 	onClick
 }) => {
 
-	if (filter === currentFilter) {
+	if (active) {
 		return <span>{children}</span>
 	}
 
-	return (<a href='#' onClick={e=>{ e.preventDefault(); onClick(filter);}}>{children}</a>);
+	return (<a href='#' onClick={e=>{ e.preventDefault(); onClick();}}>{children}</a>);
 };
 
 const getVisibleTodos = (todos, filter) => {
@@ -153,56 +152,76 @@ const getVisibleTodos = (todos, filter) => {
 	}
 };
 
-let nextTodoId = 0;
-const TodoApp = ({
-	todos,
-	visibilityFilter
-}) => {
-	const visibleTodos = getVisibleTodos(todos, visibilityFilter);
 
-	const onTodoClick = (id) => {
-		store.dispatch({
-			type: 'TOGGLE_TODO',
-			id
-		});
-	};
-	const onAddClick = (text) => {
-		store.dispatch({
-			type: 'ADD_TODO',
-			id: nextTodoId++,
-			text
-		});
-	};
-	const onFilterClick = (filter) => {
-		store.dispatch({
-			type: 'SET_VISIBILITY_FILTER',
-			filter
-		});
-	};
-
+const TodoApp = () => {
 	return (
 		<div>
-			<AddTodo onAddClick={onAddClick}/>
-			<TodoList todos={visibleTodos} onTodoClick={onTodoClick} />
-			<Footer visibilityFilter={visibilityFilter} onFilterClick={onFilterClick}/>
+			<AddTodo />
+			<VisibleTodoList />
+			<Footer/>
 		</div>
 	);
 };
 
+/**
+ * react container components
+ */
+class FilterLink extends React.Component {
+	componentDidMount() {
+		this.unsubscribe = store.subscribe(() => this.forceUpdate());
+	}
+
+	componentWillUnmount() {
+		this.unsubscribe();
+	}
+
+	render() {
+		const props = this.props;
+		const state = store.getState();
+		const onClick = () => {
+			store.dispatch({
+				type: 'SET_VISIBILITY_FILTER',
+				filter: props.filter
+			});
+		};
+
+		return (
+			<Link active={props.filter === state.visibilityFilter} onClick={onClick}>
+				{props.children}
+			</Link>
+		);
+	}
+}
+
+class VisibleTodoList extends React.Component {
+	componentDidMount() {
+		this.unsubscribe = store.subscribe(() => this.forceUpdate());
+	}
+
+	componentWillUnmount() {
+		this.unsubscribe();
+	}
+
+	render() {
+		const props = this.props;
+		const state = store.getState();
+		const visibleTodos = getVisibleTodos(state.todos, state.visibilityFilter);
+		const onTodoClick = (id) => {
+			store.dispatch({
+				type: 'TOGGLE_TODO',
+				id
+			});
+		};
+
+		return (
+			<TodoList todos={visibleTodos} onTodoClick={onTodoClick} />
+		);
+	}
+}
 
 
 /**
  * main entry
  */
 
-const render = () => {
-	ReactDOM.render(
-		<TodoApp 
-			{...store.getState()}
-		/>,
-		root
-	);
-};
-
-store.subscribe(render);
-render();
+ReactDOM.render(<TodoApp />, root);
