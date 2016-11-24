@@ -48,3 +48,13 @@ const toggleTodo = (todo) => {
 ```
 
 # 同构
+
+
+# 避免通过chunk避免race conditions
+	
+```
+	const chunk = (store) => (state) => (action) =>
+		typeof action === 'function' ?
+			action(store.dispatch, store.getState) : 
+			next(action);
+```
