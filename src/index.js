@@ -14,15 +14,20 @@ import util from './util';
 import App from './components/App';
 import todoApp from './reducers';
 
-const persistedState = {
-	todos: [{
-		id: '0',
-		text: 'Welcome back!',
-		completed: false,
-	}]
-};
+import {
+	loadState,
+	saveState
+} from './localStorage';
+
+const persistedState = loadState();
 
 const store = createStore(todoApp, persistedState);
+
+store.subscribe(() => {
+	saveState({
+		todos: store.getState().todos
+	});
+});
 
 render(
 	<Provider store={store}>

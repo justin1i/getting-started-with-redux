@@ -11,6 +11,7 @@
   "author": "Justin Li",
   "license": "ISC",
   "dependencies": {
+    "node-uuid": "^1.4.7",
     "purecss": "^0.6.0",
     "react": "^15.4.0",
     "react-dom": "^15.4.1",
