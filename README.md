@@ -58,3 +58,5 @@ const toggleTodo = (todo) => {
 			action(store.dispatch, store.getState) : 
 			next(action);
 ```
+
+# normolizr
