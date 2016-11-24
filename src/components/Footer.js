@@ -5,9 +5,9 @@ const Footer = () => (
 	<p>
 		显示：
 		{' '}
-		<FilterLink filter="SHOW_ALL" >所有</FilterLink> {' '}
-		<FilterLink filter="SHOW_ACTIVE">激活的</FilterLink> {' '}
-		<FilterLink filter="SHOW_COMPLETED">完成的</FilterLink> {' '}
+		<FilterLink filter="all" >所有</FilterLink> {' '}
+		<FilterLink filter="active">激活的</FilterLink> {' '}
+		<FilterLink filter="completed">完成的</FilterLink> {' '}
 	</p>
 );
 

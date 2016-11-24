@@ -1,25 +1,20 @@
 import React from 'react';
 import {
-	connect
-} from 'react-redux';
+	Link
+} from 'react-router';
 
-import {
-	setVisibilityFilter
-} from '../actions';
+const FilterLink = ({
+	filter,
+	children
+}) => {
 
-import Link from './Link';
+	const to = filter === 'all' ? '' : filter;
+	const activeStyle = {
+		textDecoration: 'none',
+		color: 'black'
+	};
 
-
-const mapStateToLinkProps = (state, ownProps) => ({
-	active: state.visibilityFilter === ownProps.filter
-});
-
-const mapDispatchToLinkProps = (dispatch, ownProps) => ({
-	onClick() {
-		dispatch(setVisibilityFilter(ownProps.filter));
-	}
-});
-
-const FilterLink = connect(mapStateToLinkProps, mapDispatchToLinkProps)(Link);
+	return <Link to={to} activeStyle={activeStyle}>{children}</Link>;
+};
 
 export default FilterLink;
