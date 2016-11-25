@@ -10,7 +10,7 @@ export const fetchTodos = (filter) => (dispatch, getState) => {
 
   dispatch({
     type: 'FETCH_TODOS_REQUEST',
-    filter
+    filter,
   });
 
   return api.fetchTodos(filter).then(

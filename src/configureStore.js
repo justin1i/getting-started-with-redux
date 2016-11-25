@@ -11,8 +11,8 @@ const configureStore = () => {
   }
 
   return createStore(
-    todoApp, 
-    applyMiddleware(...middlewares),
+    todoApp,
+    applyMiddleware(...middlewares)
   );
 };
 

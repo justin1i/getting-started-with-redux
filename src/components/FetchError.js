@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 
 const FetchError = ({ message, onRetry }) => (
   <div>
@@ -6,5 +6,10 @@ const FetchError = ({ message, onRetry }) => (
     <button onClick={onRetry}>重试</button>
   </div>
 );
+
+FetchError.propTypes = {
+  message: PropTypes.string,
+  onRetry: PropTypes.func,
+};
 
 export default FetchError;

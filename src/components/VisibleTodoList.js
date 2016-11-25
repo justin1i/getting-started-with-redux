@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import * as actions from '../actions';
@@ -35,7 +35,7 @@ class VisibleTodoList extends Component {
         />
       );
     }
-  
+
     return (
       <TodoList
         todos={todos}
@@ -44,6 +44,14 @@ class VisibleTodoList extends Component {
     );
   }
 }
+VisibleTodoList.propTypes = {
+  filter: PropTypes.string,
+  todos: PropTypes.array,
+  isFetching: PropTypes.bool,
+  errorMessage: PropTypes.string,
+  fetchTodos: PropTypes.func,
+  toggleTodo: PropTypes.func,
+};
 
 const mapStateToProps = (state, { params }) => {
   const filter = params.filter || 'all';
