@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node devServer.js",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "build": "webpack"
   },
   "author": "Justin Li",
   "license": "ISC",
