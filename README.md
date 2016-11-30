@@ -60,3 +60,20 @@ const toggleTodo = (todo) => {
 ```
 
 # normolizr
+
+
+# Fractal项目结构
+
+小项目使用扁平的文件结构
+	components
+	contianers
+	etc
+这种结构伸缩性不好，随着项目增长，会影响开发效率
+
+从第一天开始，就使用Fractal项目结构，运行项目驱动架构
+
+！但是
+	保持store扁平
+
+
+
